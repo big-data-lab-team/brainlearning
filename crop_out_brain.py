@@ -22,8 +22,8 @@ def encoder_model():
     # Layer E1
     model.add(Layer(input_shape=(320, 320, 1)))
     model.add(Conv2D(64, (11, 11), padding='same', strides=(2, 2)))
-    model.add(LeakyReLU(alpha=0.2))
-    # model.add(Activation('tanh'))
+    # model.add(LeakyReLU(alpha=0.2))
+    model.add(Activation('tanh'))
     model.add(Dropout(rate=0.5))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     # Result 82x82x64
@@ -93,7 +93,7 @@ def combine_models(e, d):
     return model
 
 
-def train(BATCH_SIZE):
+def build_madel():
     e = encoder_model()
     d = decoder_model()
     e_optim = SGD(lr=0.0005, momentum=0.9, nesterov=True)
@@ -124,55 +124,58 @@ def get_args():
     return parser.parse_args()
 
 
-def recreate_mask(array_element):
-    if array_element > 0:
-        return 1
-    else:
-        return 0
-
-
 def pre_process():
     full_image_file_name = "../ml-bet/103414_3T_T1w_MPR1.nii.gz"
-    brain_image_file_name = "../ml-bet/103414_3T_T1w_MPR1_brain.nii.gz"
-
     full_image_file = nib.load(full_image_file_name)
-    brain_image_file = nib.load(brain_image_file_name)
-
     full_image = full_image_file.get_data()
     padded_full_image = np.pad(full_image, ((32, 32), (0, 0), (0, 0)), mode='constant')
+
+    brain_image_file_name = "../ml-bet/103414_3T_T1w_MPR1_brain.nii.gz"
+    brain_image_file = nib.load(brain_image_file_name)
     brain_image = brain_image_file.get_data()
-    padded_brain_image = np.pad(brain_image, ((32, 32), (0, 0), (0, 0)), mode='constant')
+    brain_image_mask = (brain_image != 0).astype(int)
+    # padded_brain_image = np.pad(brain_image, ((32, 32), (0, 0), (0, 0)), mode='constant')
+    padded_brain_image_mask = np.pad(brain_image_mask, ((32, 32), (0, 0), (0, 0)), mode='constant')
 
     print('Full Image Shape', full_image.shape)
     print('Padded Full Image Shape', padded_full_image.shape)
-    print('Brain Image Shape', brain_image.shape)
-    print('Padded brain Image Shape', padded_brain_image.shape)
 
-    # numpy.set_printoptions(threshold=numpy.nan)
-    print('1 slice Full Image Shape')
-    print(full_image[125, :, :])
-    print('1 slice Padded Full Image Shape')
-    print(padded_full_image[125, :, :])
-    print('1 slice Image Shape')
-    print(brain_image[125, :, :])
+    print('Brain Image Shape', brain_image.shape)
+    # print('Padded Brain Image Shape', padded_brain_image.shape)
+    print('Brain Mask Image Shape', brain_image_mask.shape)
+    print('Padded Brain Mask Image Shape', padded_brain_image_mask.shape)
 
     z_full_stack = np.copy(padded_full_image)
     y_full_stack = np.rot90(padded_full_image, axes=(0, 1))
     x_full_stack = np.rot90(padded_full_image, axes=(0, 2))
     full_image_stack = np.concatenate((z_full_stack, y_full_stack, x_full_stack))
+
     full_image_stack_max = np.amax(full_image_stack, axis=(1, 2))
     print(full_image_stack_max.shape)
 
-    full_image_stack_normallized = np.divide(full_image_stack, full_image_stack_max[:, None, None],
-                                             where=full_image_stack_max[:, None, None] != 0)
-    print(full_image_stack_normallized.shape)
+    # v1 0 to +1 -> relu
+    full_image_stack_normalized = np.divide(full_image_stack, full_image_stack_max[:, None, None],
+                                            where=full_image_stack_max[:, None, None] != 0)
 
-    z_brain_stack = np.copy(padded_brain_image)
-    y_brain_stack = np.rot90(padded_brain_image, axes=(0, 1))
-    x_brain_stack = np.rot90(padded_brain_image, axes=(0, 2))
-    brain_image_stack = np.concatenate((z_brain_stack, y_brain_stack, x_brain_stack))
-    recreate_mask_vectorized = np.vectorize(recreate_mask)
-    # brain_image_stack = recreate_mask_vectorized(brain_image_stack)
+    # v2 -1 to +1 -> tanh
+    # full_image_stack_max = full_image_stack_max / 2
+    # full_image_stack_normalized = np.extract(full_image_stack, full_image_stack_max[:, None, None])
+    # full_image_stack_normalized = np.divide(full_image_stack_normalized, full_image_stack_max[:, None, None],
+    #                                        where=full_image_stack_max[:, None, None] != 0)
+
+    print(full_image_stack_normalized.shape)
+
+    # z_brain_stack = np.copy(padded_brain_image)
+    # y_brain_stack = np.rot90(padded_brain_image, axes=(0, 1))
+    # x_brain_stack = np.rot90(padded_brain_image, axes=(0, 2))
+    # brain_image_stack = np.concatenate((z_brain_stack, y_brain_stack, x_brain_stack))
+    # print(brain_image_stack.shape)
+
+    z_brain_mask_stack = np.copy(padded_brain_image_mask)
+    y_brain_mask_stack = np.rot90(padded_brain_image_mask, axes=(0, 1))
+    x_brain_mask_stack = np.rot90(padded_brain_image_mask, axes=(0, 2))
+    brain_image_mask_stack = np.concatenate((z_brain_mask_stack, y_brain_mask_stack, x_brain_mask_stack))
+    print(brain_image_mask_stack.shape)
 
 
 def experiments():
@@ -189,13 +192,8 @@ def experiments():
     print(x[0, :, :])
 
     new_array = np.concatenate((m, n, x))
-    recreate_mask_vectorized = np.vectorize(recreate_mask)
     print(new_array.shape)
     print(new_array[0, :, :])
-
-    mask = recreate_mask_vectorized(new_array)
-    print(mask.shape)
-    print(mask[0, :, :])
 
     maxs = np.amax(new_array, axis=(1, 2))
     print(maxs.shape)
@@ -204,12 +202,17 @@ def experiments():
     print(normallized.shape)
 
 
+def train(BATCH_SIZE):
+    print("Train")
+
+
 if __name__ == "__main__":
-    args = get_args()
+    pre_process()
+
+    # args = get_args()
     # experiments()
 
-    train(BATCH_SIZE=args.batch_size)
-    # pre_process()
+    # train(BATCH_SIZE=args.batch_size)
 
     # if args.mode == "train":
     #     train(BATCH_SIZE=args.batch_size)
