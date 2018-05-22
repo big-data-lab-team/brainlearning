@@ -93,7 +93,7 @@ def combine_models(e, d):
     return model
 
 
-def build_madel():
+def build_model():
     e = encoder_model()
     d = decoder_model()
     e_optim = SGD(lr=0.0005, momentum=0.9, nesterov=True)
@@ -114,14 +114,7 @@ def build_madel():
     print("Full Model")
     print(full_model.summary())
 
-
-def get_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--mode", type=str)
-    parser.add_argument("--batch_size", type=int, default=128)
-    parser.add_argument("--nice", dest="nice", action="store_true")
-    parser.set_defaults(nice=False)
-    return parser.parse_args()
+    return full_model
 
 
 def pre_process():
@@ -177,6 +170,22 @@ def pre_process():
     brain_image_mask_stack = np.concatenate((z_brain_mask_stack, y_brain_mask_stack, x_brain_mask_stack))
     print(brain_image_mask_stack.shape)
 
+    print('same ', dice_loss(brain_image_mask_stack[125], brain_image_mask_stack[125]))
+    print('different ', dice_loss(brain_image_mask_stack[125], brain_image_mask_stack[126]))
+    print('middle and zero ', dice_loss(brain_image_mask_stack[125], brain_image_mask_stack[0]))
+
+    return full_image_stack_normalized, brain_image_mask_stack
+
+
+def sorensen_dice_distance(img_1, img_2):
+    numerator = np.sum(np.multiply(img_1, img_2))
+    denominator = np.sum(img_1) + np.sum(img_2)
+    return (2 * numerator) / denominator
+
+
+def dice_loss(y_true, y_pred):
+    return 1 - sorensen_dice_distance(y_true, y_pred)
+
 
 def experiments():
     m = np.array([[[1, 2], [3, 4]], [[21, 22], [23, 24]]], int)
@@ -202,17 +211,40 @@ def experiments():
     print(normallized.shape)
 
 
-def train(BATCH_SIZE):
+def train():
     print("Train")
+    model = build_model()
+    model.compile(loss=dice_loss,
+                  optimizer='adam')
+    x_train, y_train = pre_process()
+    x_train = x_train[0:10, ]
+    y_train = y_train[0:10, ]
+    x_train = x_train.reshape((10, 320, 320, 1))
+    y_train = y_train.reshape((10, 320, 320, 1))
+    history = model.fit(x_train,
+                        y_train,
+                        validation_split=20,
+                        verbose=1,
+                        epochs=30,
+                        batch_size=10)
+    print(history)
+
+
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--mode", type=str)
+    parser.add_argument("--batch_size", type=int, default=128)
+    parser.add_argument("--nice", dest="nice", action="store_true")
+    parser.set_defaults(nice=False)
+    return parser.parse_args()
 
 
 if __name__ == "__main__":
-    pre_process()
+    # experiments()
+    train()
+    # pre_process()
 
     # args = get_args()
-    # experiments()
-
-    # train(BATCH_SIZE=args.batch_size)
 
     # if args.mode == "train":
     #     train(BATCH_SIZE=args.batch_size)
