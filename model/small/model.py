@@ -135,12 +135,12 @@ def build_model():
     e_optim = SGD(lr=0.0005, momentum=0.9, nesterov=True)
     d_optim = SGD(lr=0.0005, momentum=0.9, nesterov=True)
 
-    e.compile(loss='binary_crossentropy', optimizer=e_optim)
+    e.compile(loss='mean_squared_error', optimizer=e_optim)
     print("Small Encoder Model")
     print(e.summary())
 
     # d.trainable = True
-    d.compile(loss='binary_crossentropy', optimizer=d_optim)
+    d.compile(loss='mean_squared_error', optimizer=d_optim)
     print("Small Decoder Model")
     print(d.summary())
 

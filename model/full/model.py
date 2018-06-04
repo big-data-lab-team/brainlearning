@@ -55,28 +55,26 @@ def decoder_model():
     model.add(Reshape((20, 20, -1)))
 
     # Layer D2
-    model.add(Conv2D(512, (3, 3), padding='same'))
+    model.add(Conv2D(512, (3, 3), padding='same', strides=(2, 2)))
     model.add(LeakyReLU(alpha=0.2))
     model.add(Dropout(rate=0.5))
-    model.add(UpSampling2D(size=(2, 2)))
 
     # Layer D3
-    model.add(Conv2D(128, (5, 5), padding='same'))
+    model.add(Conv2D(128, (5, 5), padding='same', strides=(2, 2)))
     model.add(LeakyReLU(alpha=0.2))
     model.add(Dropout(rate=0.5))
-    model.add(UpSampling2D(size=(2, 2)))
 
     # Layer D4
-    model.add(Conv2D(64, (11, 11), padding='same'))
+    model.add(Conv2D(64, (11, 11), padding='same', strides=(2, 2)))
     model.add(Activation('relu'))
     model.add(Dropout(rate=0.5))
-    model.add(UpSampling2D(size=(2, 2)))
 
     # Layer D5
-    model.add(Conv2D(1, (5, 5), padding='same'))
+    model.add(Conv2D(1, (5, 5), padding='same', strides=(2, 2)))
     model.add(Activation('relu'))
     model.add(Dropout(rate=0.5))
-    model.add(UpSampling2D(size=(2, 2)))
+
+    model.add(Activation("sigmoid"))
 
     return model
 
