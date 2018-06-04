@@ -1,28 +1,9 @@
-import datetime as dt
-import importlib
-
-import nibabel as nib
-from keras.callbacks import TensorBoard, ModelCheckpoint
-
-from keras.engine import Layer
-from keras.models import Sequential, load_model
-from keras.layers import Dense, LeakyReLU, Dropout
-from keras.layers import Reshape, Softmax
-from keras.layers.core import Activation
-from keras.layers.normalization import BatchNormalization
-from keras.layers.convolutional import Conv2D, MaxPooling2D, Conv2DTranspose, UpSampling2D
-from keras.layers.core import Flatten
-from keras.optimizers import SGD
-from keras.datasets import mnist
-import numpy as np
-from PIL import Image
-import argparse
-import math
-import os
-import time
+import fnmatch
 from os import listdir
 from os.path import isfile, join
-import fnmatch
+
+import nibabel as nib
+import numpy as np
 
 
 def pre_process():
