@@ -1,19 +1,11 @@
 from keras.engine import Layer
-from keras.models import Sequential, load_model
 from keras.layers import Dense, LeakyReLU, Dropout
-from keras.layers import Reshape, Softmax
+from keras.layers import Reshape
+from keras.layers.convolutional import Conv2D, MaxPooling2D, Conv2DTranspose
 from keras.layers.core import Activation
-from keras.layers.normalization import BatchNormalization
-from keras.layers.convolutional import Conv2D, MaxPooling2D, Conv2DTranspose, UpSampling2D
 from keras.layers.core import Flatten
+from keras.models import Sequential
 from keras.optimizers import SGD
-from keras.datasets import mnist
-import numpy as np
-from PIL import Image
-import argparse
-import math
-import os
-import time
 
 
 def model_name():
