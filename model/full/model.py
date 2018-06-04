@@ -1,7 +1,7 @@
 from keras.engine import Layer
-from keras.layers import Dense, LeakyReLU, Dropout
+from keras.layers import Dense, LeakyReLU, Dropout, Conv2DTranspose
 from keras.layers import Reshape
-from keras.layers.convolutional import Conv2D, MaxPooling2D, UpSampling2D
+from keras.layers.convolutional import Conv2D, MaxPooling2D
 from keras.layers.core import Activation
 from keras.layers.core import Flatten
 from keras.models import Sequential
@@ -55,23 +55,23 @@ def decoder_model():
     model.add(Reshape((20, 20, -1)))
 
     # Layer D2
-    model.add(Conv2D(512, (3, 3), padding='same', strides=(2, 2)))
+    model.add(Conv2DTranspose(512, (3, 3), padding='same', strides=(2, 2)))
     model.add(LeakyReLU(alpha=0.2))
     model.add(Dropout(rate=0.5))
 
     # Layer D3
-    model.add(Conv2D(128, (5, 5), padding='same', strides=(2, 2)))
+    model.add(Conv2DTranspose(128, (5, 5), padding='same', strides=(2, 2)))
     model.add(LeakyReLU(alpha=0.2))
     model.add(Dropout(rate=0.5))
 
     # Layer D4
-    model.add(Conv2D(64, (11, 11), padding='same', strides=(2, 2)))
-    model.add(Activation('relu'))
+    model.add(Conv2DTranspose(64, (11, 11), padding='same', strides=(2, 2)))
+    model.add(LeakyReLU(alpha=0.2))
     model.add(Dropout(rate=0.5))
 
     # Layer D5
-    model.add(Conv2D(1, (5, 5), padding='same', strides=(2, 2)))
-    model.add(Activation('relu'))
+    model.add(Conv2DTranspose(1, (5, 5), padding='same', strides=(2, 2)))
+    model.add(LeakyReLU(alpha=0.2))
     model.add(Dropout(rate=0.5))
 
     model.add(Activation("sigmoid"))
