@@ -115,8 +115,7 @@ def train(model_imported=None, data_generator_instance=None, continue_training=F
     print('Evaluation:')
     # acc = model_to_train.evaluate(x_test, y_test, batch_size=10)
     acc = model_to_train.evaluate_generator(
-        generator=data_generator_instance,
-        batch_size=10)
+        generator=data_generator_instance)
     print('Evaluation result:', acc)
 
     save_model(model_to_train, acc, save_path)
