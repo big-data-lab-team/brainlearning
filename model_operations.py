@@ -15,7 +15,6 @@ from keras.layers.core import Flatten
 from keras.optimizers import SGD
 from keras.datasets import mnist
 import numpy as np
-from PIL import Image
 import argparse
 import math
 import os
