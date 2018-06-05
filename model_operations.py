@@ -160,7 +160,7 @@ def get_args():
     parser.add_argument("--mode", type=str)
     parser.add_argument("--epochs", type=int, default=10)
     parser.add_argument("--steps_per_epoch", type=int, default=1)
-    parser.add_argument("--steps_per_epoch", type=int, default=1)
+    parser.add_argument("--validation_steps", type=int, default=1)
     parser.add_argument("--batch_size", type=int, default=10)
     parser.add_argument("--graph_dir", type=str, default='./graph/')
     parser.add_argument("--model_dir", type=str, default='./model/')
