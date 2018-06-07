@@ -7,4 +7,4 @@
 
 module load cuda cudnn python/3.6.3
 source tensorflow/bin/activate
-python ./model_operations.py --mode train --model small --batch_size 1 --steps_per_epoch 1 --epochs 30
+python ./model_operations.py --mode train --model small --batch_size 1 --steps_per_epoch 1 --epochs 30 -- ./project/ml-bet/

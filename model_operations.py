@@ -156,17 +156,21 @@ def predict(model_dir, model_file='model.hdf5', verbose=1):
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", type=str)
     parser.add_argument("--mode", type=str)
+    parser.add_argument("--verbose", type=str, default='1')
+
+    parser.add_argument("--images_dir_path", type=str, default='../ml-bet/')
+
+    parser.add_argument("--graph_dir", type=str, default='./graph/')
+
+    parser.add_argument("--model", type=str)
     parser.add_argument("--epochs", type=int, default=10)
     parser.add_argument("--steps_per_epoch", type=int, default=1)
     parser.add_argument("--validation_steps", type=int, default=1)
     parser.add_argument("--batch_size", type=int, default=10)
-    parser.add_argument("--graph_dir", type=str, default='./graph/')
     parser.add_argument("--model_dir", type=str, default='./model/')
     parser.add_argument("--model_file", type=str, default='model.hdf5')
     parser.add_argument("--result_dir", type=str, default='./result/')
-    parser.add_argument("--verbose", type=str, default='1')
     return parser.parse_args()
 
 
@@ -176,7 +180,7 @@ if __name__ == "__main__":
         model = importlib.import_module('model.' + args.model + '.model')
         data_generator = importlib.import_module('model.' + args.model + '.data_generator')
         data_generator_inst = data_generator.DataGenerator(
-            dir_path='../ml-bet/',
+            dir_path=args.images_dir_path,
             file_pattern='*.nii.gz',
             distinguish_pattern='_brain',
             batch_size=args.batch_size,
@@ -195,7 +199,7 @@ if __name__ == "__main__":
     elif args.mode == 'continue':
         data_generator = importlib.import_module('model.' + args.model + '.data_generator')
         data_generator_inst = data_generator.DataGenerator(
-            dir_path='../ml-bet/',
+            dir_path=args.images_dir_path,
             file_pattern='*.nii.gz',
             distinguish_pattern='_brain',
             batch_size=args.batch_size,
