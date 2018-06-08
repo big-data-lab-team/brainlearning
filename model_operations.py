@@ -11,7 +11,7 @@ from keras.optimizers import SGD
 
 import pre_process
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+# os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 timestamp_format = '%Y-%m-%d-%H:%M:%S.%f'
 round_accuracy = 4

@@ -6,6 +6,7 @@ from keras.layers.core import Activation
 from keras.layers.core import Flatten
 from keras.models import Sequential
 from keras.optimizers import SGD
+import tensorflow as tf
 
 
 def model_name():
@@ -16,7 +17,7 @@ def encoder_model():
     model = Sequential()
     # Layer E1
     model.add(Layer(input_shape=(320, 320, 1)))
-    model.add(Conv2D(20, (11, 11), padding='same', strides=(2, 2)))
+    model.add(Conv2D(5, (11, 11), padding='same', strides=(2, 2)))
     # model.add(LeakyReLU(alpha=0.2))
     model.add(Activation('tanh'))
     model.add(Dropout(rate=0.5))
@@ -24,14 +25,14 @@ def encoder_model():
     # Result 82x82x64
 
     # Layer E2
-    model.add(Conv2D(40, (5, 5), padding='same'))
+    model.add(Conv2D(10, (5, 5), padding='same'))
     model.add(LeakyReLU(alpha=0.2))
     model.add(Dropout(rate=0.5))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     # Result 41x41x128
 
     # Layer E3
-    model.add(Conv2D(80, (3, 3), padding='same'))
+    model.add(Conv2D(20, (3, 3), padding='same'))
     model.add(LeakyReLU(alpha=0.2))
     model.add(Dropout(rate=0.5))
     model.add(MaxPooling2D(pool_size=(2, 2)))
@@ -55,19 +56,19 @@ def encoder_model():
 #     model.add(Reshape((20, 20, -1)))
 #
 #     # Layer D2
-#     model.add(Conv2DTranspose(80, (3, 3), padding='same'))
+#     model.add(Conv2DTranspose(20, (3, 3), padding='same'))
 #     model.add(LeakyReLU(alpha=0.2))
 #     model.add(Dropout(rate=0.5))
 #     model.add(UpSampling2D(size=(2, 2)))
 #
 #     # Layer D3
-#     model.add(Conv2DTranspose(40, (5, 5), padding='same'))
+#     model.add(Conv2DTranspose(10, (5, 5), padding='same'))
 #     model.add(LeakyReLU(alpha=0.2))
 #     model.add(Dropout(rate=0.5))
 #     model.add(UpSampling2D(size=(2, 2)))
 #
 #     # Layer D4
-#     model.add(Conv2DTranspose(20, (11, 11), padding='same'))
+#     model.add(Conv2DTranspose(5, (11, 11), padding='same'))
 #     model.add(LeakyReLU(alpha=0.2))
 #     model.add(Dropout(rate=0.5))
 #     model.add(UpSampling2D(size=(2, 2)))
@@ -95,17 +96,17 @@ def decoder_model():
     model.add(Reshape((20, 20, -1)))
 
     # Layer D2
-    model.add(Conv2DTranspose(80, (3, 3), padding='same', strides=(2, 2)))
+    model.add(Conv2DTranspose(20, (3, 3), padding='same', strides=(2, 2)))
     model.add(LeakyReLU(alpha=0.2))
     model.add(Dropout(rate=0.5))
 
     # Layer D3
-    model.add(Conv2DTranspose(40, (5, 5), padding='same', strides=(2, 2)))
+    model.add(Conv2DTranspose(10, (5, 5), padding='same', strides=(2, 2)))
     model.add(LeakyReLU(alpha=0.2))
     model.add(Dropout(rate=0.5))
 
     # Layer D4
-    model.add(Conv2DTranspose(20, (11, 11), padding='same', strides=(2, 2)))
+    model.add(Conv2DTranspose(5, (11, 11), padding='same', strides=(2, 2)))
     model.add(LeakyReLU(alpha=0.2))
     model.add(Dropout(rate=0.5))
 
@@ -135,12 +136,14 @@ def build_model():
     e_optim = SGD(lr=0.0005, momentum=0.9, nesterov=True)
     d_optim = SGD(lr=0.0005, momentum=0.9, nesterov=True)
 
-    e.compile(loss='binary_crossentropy', optimizer=e_optim)
+    run_opts = tf.RunOptions(report_tensor_allocations_upon_oom = True)
+
+    e.compile(loss='binary_crossentropy', optimizer=e_optim, options = run_opts)
     print("Small Encoder Model")
     print(e.summary())
 
     # d.trainable = True
-    d.compile(loss='binary_crossentropy', optimizer=d_optim)
+    d.compile(loss='binary_crossentropy', optimizer=d_optim, options = run_opts)
     print("Small Decoder Model")
     print(d.summary())
 
