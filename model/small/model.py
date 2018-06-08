@@ -32,7 +32,7 @@ def encoder_model():
     # Result 41x41x128
 
     # Layer E3
-    model.add(Conv2D(20, (3, 3), padding='same'))
+    model.add(Conv2D(10, (3, 3), padding='same'))
     model.add(LeakyReLU(alpha=0.2))
     model.add(Dropout(rate=0.5))
     model.add(MaxPooling2D(pool_size=(2, 2)))
@@ -56,7 +56,7 @@ def decoder_model():
     model.add(Reshape((20, 20, -1)))
 
     # Layer D2
-    model.add(Conv2DTranspose(20, (3, 3), padding='same', strides=(2, 2)))
+    model.add(Conv2DTranspose(10, (3, 3), padding='same', strides=(2, 2)))
     model.add(LeakyReLU(alpha=0.2))
     model.add(Dropout(rate=0.5))
 
@@ -111,6 +111,7 @@ def build_model():
     full_model = combine_models(e, d)
 
     full_model.compile(loss='binary_crossentropy', optimizer=optim, options=run_opts)
+    # add to compile metrics=['accuracy']
     print("Full Small Model")
     print(full_model.summary())
 

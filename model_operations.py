@@ -71,8 +71,8 @@ def train(model_imported=None,
     else:
         print("Train")
         model_to_train = model_imported.build_model()
-        optim = SGD(lr=0.0005, momentum=0.9, nesterov=True)
-        model_to_train.compile(loss='binary_crossentropy', optimizer=optim)
+        # optim = SGD(lr=0.0005, momentum=0.9, nesterov=True)
+        # model_to_train.compile(loss='binary_crossentropy', optimizer=optim)
         save_path = './model/' + model_imported.model_name() + '/'
         graph_path = './graph/' + model_imported.model_name() + '/'
 
