@@ -7,9 +7,6 @@ import time
 import numpy as np
 from keras.callbacks import TensorBoard, ModelCheckpoint
 from keras.models import load_model
-from keras.optimizers import SGD
-
-import pre_process
 
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
@@ -61,20 +58,22 @@ def train(model_imported=None,
           epochs=10,
           steps_per_epoch=1,
           validation_steps=1,
-          verbose=1):
+          verbose=1,
+          save_each_epochs=1):
+
     if continue_training:
         print("Continue Train")
         model_to_train = load_model('./model/' + model_dir + model_file, custom_objects={'dice_loss': dice_loss})
-        print(model_to_train.summary())
         save_path = './model/' + model_dir
         graph_path = './graph/' + model_dir
     else:
         print("Train")
         model_to_train = model_imported.build_model()
-        # optim = SGD(lr=0.0005, momentum=0.9, nesterov=True)
-        # model_to_train.compile(loss='binary_crossentropy', optimizer=optim)
         save_path = './model/' + model_imported.model_name() + '/'
         graph_path = './graph/' + model_imported.model_name() + '/'
+
+    print('Model Summary')
+    print(model_to_train.summary())
 
     if not os.path.exists(graph_path):
         os.makedirs(graph_path)
@@ -87,7 +86,12 @@ def train(model_imported=None,
     file_path = save_path + 'epoch/' + dt.datetime.fromtimestamp(time.time()).strftime(
         timestamp_format) + '-weights-improvement-{epoch:02d}.hdf5'
 
-    checkpoint = ModelCheckpoint(file_path, monitor='loss', verbose=1, save_best_only=True, mode='min')
+    checkpoint = ModelCheckpoint(file_path,
+                                 monitor='loss',
+                                 verbose=1,
+                                 save_best_only=True,
+                                 mode='min',
+                                 period=save_each_epochs)
 
     model_to_train.fit_generator(generator=data_generator_instance,
                                  steps_per_epoch=steps_per_epoch,
@@ -103,7 +107,9 @@ def train(model_imported=None,
     acc = model_to_train.evaluate_generator(generator=data_generator_instance)
     print('Evaluation result:', acc)
 
+    print('Saving final Model')
     save_model(model_to_train, acc, save_path)
+    print('Model Saved Successfully')
 
 
 def save_model(model_to_save, accuracy, model_dir):
@@ -131,18 +137,25 @@ def save_model(model_to_save, accuracy, model_dir):
     print("Saved model to disk")
 
 
-def predict(model_dir, model_file='model.hdf5', verbose=1):
+def generate(
+        model_dir,
+        model_file='model.hdf5',
+        data_generator_instance=None,
+        verbose=1):
     print("Predict")
     model_to_predict = load_model('./model/' + str(model_dir) + str(model_file),
                                   custom_objects={'dice_loss': dice_loss})
     print(model_to_predict.summary())
 
-    x, y = pre_process.pre_process()
-    x_predict = x[128]
-    x_predict = x_predict.reshape((1, 320, 320, 1))
+    # x, y = pre_process.pre_process()
+    # x_predict = x[128]
+    # x_predict = x_predict.reshape((1, 320, 320, 1))
+    # x, y = data_generator_instance.__getitem__(1)
+    x = data_generator_instance.get_file()
+    x = np.reshape(x, (1, 320, 320, 1))
 
     print('Predict:')
-    pred = model_to_predict.predict(x_predict, verbose=verbose)
+    pred = model_to_predict.predict(x, verbose=verbose)
 
     timestamp = dt.datetime.fromtimestamp(time.time()).strftime(timestamp_format)
     result_dir = './model/' + model_dir + 'result/'
@@ -150,24 +163,27 @@ def predict(model_dir, model_file='model.hdf5', verbose=1):
         os.makedirs(result_dir)
     print('Predict result:', pred)
     np.savetxt(result_dir + timestamp + '-result.txt', pred.reshape((320, 320)), fmt='%.2f')
-    np.savetxt(result_dir + timestamp + '-mri.txt', x[128], fmt='%.2f')
-    np.savetxt(result_dir + timestamp + '-brain-mask.txt', y[128], fmt='%d')
+    np.savetxt(result_dir + timestamp + '-result-rounded.txt', np.rint(pred.reshape((320, 320))), fmt='%d')
+    np.savetxt(result_dir + timestamp + '-mri.txt', x[0].reshape((320, 320)), fmt='%.2f')
+    np.savetxt(result_dir + timestamp + '-brain-mask.txt', y[0].reshape((320, 320)), fmt='%d')
 
 
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", type=str)
-    parser.add_argument("--verbose", type=str, default='1')
-
-    parser.add_argument("--images_dir_path", type=str, default='../ml-bet/')
+    parser.add_argument("--verbose", type=int, default=1)
 
     parser.add_argument("--graph_dir", type=str, default='./graph/')
 
     parser.add_argument("--model", type=str)
     parser.add_argument("--epochs", type=int, default=10)
+    parser.add_argument("--save_each_epochs", type=int, default=1)
     parser.add_argument("--steps_per_epoch", type=int, default=1)
     parser.add_argument("--validation_steps", type=int, default=1)
     parser.add_argument("--batch_size", type=int, default=10)
+    parser.add_argument("--n_channels", type=int, default=1)
+    parser.add_argument("--images_dir_path", type=str, default='../ml-bet/')
+
     parser.add_argument("--model_dir", type=str, default='./model/')
     parser.add_argument("--model_file", type=str, default='model.hdf5')
     parser.add_argument("--result_dir", type=str, default='./result/')
@@ -176,17 +192,18 @@ def get_args():
 
 if __name__ == "__main__":
     args = get_args()
+    data_generator = importlib.import_module('model.' + args.model + '.data_generator')
+    data_generator_inst = data_generator.DataGenerator(
+        dir_path=args.images_dir_path,
+        file_pattern='*.nii.gz',
+        distinguish_pattern='_brain',
+        batch_size=args.batch_size,
+        dim=320,
+        n_channels=args.n_channels,
+        shuffle=False)
+
     if args.mode == "train":
         model = importlib.import_module('model.' + args.model + '.model')
-        data_generator = importlib.import_module('model.' + args.model + '.data_generator')
-        data_generator_inst = data_generator.DataGenerator(
-            dir_path=args.images_dir_path,
-            file_pattern='*.nii.gz',
-            distinguish_pattern='_brain',
-            batch_size=args.batch_size,
-            dim=320,
-            n_channels=1,
-            shuffle=False)
         train(model,
               data_generator_inst,
               continue_training=False,
@@ -195,42 +212,31 @@ if __name__ == "__main__":
               epochs=args.epochs,
               steps_per_epoch=args.steps_per_epoch,
               validation_steps=args.validation_steps,
-              verbose=args.verbose)
+              verbose=args.verbose,
+              save_each_epochs=args.save_each_epochs)
     elif args.mode == 'continue':
-        data_generator = importlib.import_module('model.' + args.model + '.data_generator')
-        data_generator_inst = data_generator.DataGenerator(
-            dir_path=args.images_dir_path,
-            file_pattern='*.nii.gz',
-            distinguish_pattern='_brain',
-            batch_size=args.batch_size,
-            dim=320,
-            n_channels=1,
-            shuffle=False)
-        train(data_generator_inst,
+        model = importlib.import_module('model.' + args.model + '.model')
+        train(data_generator_instance=data_generator_inst,
               continue_training=True,
               model_dir=args.model_dir,
               model_file=args.model_file,
               epochs=args.epochs,
               steps_per_epoch=args.steps_per_epoch,
               validation_steps=args.validation_steps,
-              verbose=args.verbose)
+              verbose=args.verbose,
+              save_each_epochs=args.save_each_epochs)
     elif args.mode == "generate":
-        predict(model_dir=args.model_dir,
-                model_file=args.model_file)
-    # elif args.mode == "pre_process":
-    #     data_generator = importlib.import_module('model.' + args.model + '.data_generator')
-    #     data_generator_inst = data_generator.DataGenerator(
-    #         dir_path='../ml-bet/',
-    #         file_pattern='*.nii.gz',
-    #         distinguish_pattern='_brain',
-    #         batch_size=1,
-    #         dim=320,
-    #         n_channels=1,
-    #         shuffle=False)
-    #     processed = data_generator_inst.__getitem__(1)
-    #     print(processed)
-        # file_pairs = pre_process.get_file_pairs('../ml-bet/')
-        # processed = pre_process.process_pair(file_pairs[0])
+        generate(model_dir=args.model_dir,
+                 model_file=args.model_file,
+                 data_generator_instance=data_generator_inst)
+    elif args.mode == "pre_process":
+        data_generator_inst.get_file()
+        # x, y = data_generator_inst.__getitem__(1)
+        # print(x.shape)
+        # print(y.shape)
+
+    # file_pairs = pre_process.get_file_pairs('../ml-bet/')
+    # processed = pre_process.process_pair(file_pairs[0])
 
     # build_small_model()
     # build_model()

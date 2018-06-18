@@ -51,8 +51,22 @@ class DataGenerator(keras.utils.Sequence):
 
         for i in list_ids_temp:
             x_temp, y_temp = self.process_pair(i)
-            x_temp = x_temp.reshape((self.dim * 3, self.dim, self.dim, self.n_channels))
-            y_temp = y_temp.reshape((self.dim * 3, self.dim, self.dim, 1))
+
+            # print(x_temp.shape)
+            # print(y_temp.shape)
+
+            x_temp = x_temp[ 0:100, ]
+            y_temp = y_temp[ 0:100, ]
+
+            # print(x_temp.shape)
+            # print(y_temp.shape)
+
+            # x_temp = x_temp.reshape((self.dim * 3, self.dim, self.dim, self.n_channels))
+            # y_temp = y_temp.reshape((self.dim * 3, self.dim, self.dim, 1))
+
+            x_temp = x_temp.reshape((100, self.dim, self.dim, self.n_channels))
+            y_temp = y_temp.reshape((100, self.dim, self.dim, 1))
+
             x = np.append(x, x_temp, axis=0)
             y = np.append(y, y_temp, axis=0)
         return x, y

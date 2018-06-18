@@ -10,29 +10,30 @@ import tensorflow as tf
 
 
 def model_name():
-    return 'small'
+    return 'mid'
 
 
-def encoder_model():
-    model = Sequential()
-    # Layer E1
+def encoder_model(model):
+    # Input
     model.add(Layer(input_shape=(320, 320, 1)))
-    model.add(Conv2D(20, (11, 11), padding='same', strides=(2, 2)))
-    # model.add(LeakyReLU(alpha=0.2))
+
+    # Layer E1
+    model.add(Conv2D(16, (3, 3), padding='same'))
     model.add(Activation('tanh'))
     model.add(Dropout(rate=0.5))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     # Result 82x82x64
 
     # Layer E2
-    model.add(Conv2D(40, (5, 5), padding='same'))
+    model.add(Conv2D(32, (3, 3), padding='same'))
     model.add(LeakyReLU(alpha=0.2))
     model.add(Dropout(rate=0.5))
+
     model.add(MaxPooling2D(pool_size=(2, 2)))
     # Result 41x41x128
 
     # Layer E3
-    model.add(Conv2D(80, (3, 3), padding='same'))
+    model.add(Conv2D(64, (3, 3), padding='same'))
     model.add(LeakyReLU(alpha=0.2))
     model.add(Dropout(rate=0.5))
     model.add(MaxPooling2D(pool_size=(2, 2)))
@@ -46,73 +47,56 @@ def encoder_model():
     return model
 
 
-def decoder_model():
-    model = Sequential()
+def decoder_model(model):
+    model.add(Layer(input_shape=(2048,)))
 
     # Layer D1
-    model.add(Layer(input_shape=(2048,)))
     model.add(Dense(32000))
     model.add(Activation("sigmoid"))
     model.add(Reshape((20, 20, -1)))
 
     # Layer D2
-    model.add(Conv2DTranspose(80, (3, 3), padding='same', strides=(2, 2)))
+    model.add(Conv2DTranspose(64, (3, 3), padding='same', strides=(2, 2)))
     model.add(LeakyReLU(alpha=0.2))
     model.add(Dropout(rate=0.5))
 
     # Layer D3
-    model.add(Conv2DTranspose(40, (5, 5), padding='same', strides=(2, 2)))
+    model.add(Conv2DTranspose(32, (3, 3), padding='same', strides=(2, 2)))
     model.add(LeakyReLU(alpha=0.2))
     model.add(Dropout(rate=0.5))
 
     # Layer D4
-    model.add(Conv2DTranspose(20, (11, 11), padding='same', strides=(2, 2)))
+    model.add(Conv2DTranspose(16, (3, 3), padding='same', strides=(2, 2)))
     model.add(LeakyReLU(alpha=0.2))
     model.add(Dropout(rate=0.5))
 
     # Layer D5
-    model.add(Conv2DTranspose(1, (5, 5), padding='same', strides=(2, 2)))
+    model.add(Conv2DTranspose(1, (3, 3), padding='same', strides=(2, 2)))
     model.add(LeakyReLU(alpha=0.2))
     model.add(Dropout(rate=0.5))
 
-    # model.add(Softmax())
-
-    # model.add(LeakyReLU(alpha=0.2))
     model.add(Activation("sigmoid"))
 
     return model
 
 
-def combine_models(e, d):
-    model = Sequential()
-    model.add(e)
-    model.add(d)
-    return model
-
-
 def build_model():
-    e = encoder_model()
-    d = decoder_model()
+    model = Sequential()
+    model = encoder_model(model)
+    model = decoder_model(model)
+
     # e_optim = SGD(lr=0.0005, momentum=0.9, nesterov=True)
     # d_optim = SGD(lr=0.0005, momentum=0.9, nesterov=True)
+
     optim = SGD(lr=0.0005, momentum=0.9, nesterov=True)
 
     run_opts = tf.RunOptions(report_tensor_allocations_upon_oom=True)
 
     # e.compile(loss='binary_crossentropy', optimizer=e_optim, options=run_opts)
-    # print("Small Encoder Model")
-    # print(e.summary())
-    #
     # # d.trainable = True
     # d.compile(loss='binary_crossentropy', optimizer=d_optim, options=run_opts)
-    # print("Small Decoder Model")
-    # print(d.summary())
 
-    full_model = combine_models(e, d)
-
-    full_model.compile(loss='binary_crossentropy', optimizer='adam')
+    model.compile(loss='binary_crossentropy', optimizer='adam')
     # add to compile metrics=['accuracy']
-    # print("Full Small Model")
-    # print(full_model.summary())
 
-    return full_model
+    return model

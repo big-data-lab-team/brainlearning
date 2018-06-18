@@ -20,13 +20,12 @@ class DataGenerator(keras.utils.Sequence):
         self.file_pairs = self.get_file_pairs(self.dir_path, file_pattern, distinguish_pattern)
         self.indexes = np.arange(len(self.file_pairs))
         self.on_epoch_end()
-        self.current_pair = None
 
     def __len__(self):
         return int(np.floor(len(self.file_pairs) / self.batch_size))
 
     def __getitem__(self, index):
-        print('Get Item index ', index)
+        # print('Get Item index ', index)
 
         # Generate indexes of the batch
         indexes = self.indexes[index * self.batch_size:(index + 1) * self.batch_size]
@@ -80,27 +79,6 @@ class DataGenerator(keras.utils.Sequence):
             x = np.append(x, x_temp, axis=0)
             y = np.append(y, y_temp, axis=0)
         return x, y
-
-    def get_file(self, file_name=None):
-        if file_name is None:
-            file_name = self.file_pairs[0][0]
-        full_image_file = nib.load(file_name)
-        full_image = full_image_file.get_data()
-        padded_full_image = np.pad(full_image, ((32, 32), (0, 0), (0, 0)), mode='constant')
-        z_full_stack = np.copy(padded_full_image)
-        y_full_stack = np.rot90(padded_full_image, axes=(0, 1))
-        x_full_stack = np.rot90(padded_full_image, axes=(0, 2))
-        full_image_stack = np.concatenate((z_full_stack, y_full_stack, x_full_stack))
-
-        full_image_stack_max = np.amax(full_image_stack, axis=(1, 2))
-        full_image_stack_normalized = np.divide(full_image_stack, full_image_stack_max[:, None, None],
-                                                where=full_image_stack_max[:, None, None] != 0)
-        return full_image_stack_normalized, file_name
-
-    def save_to_file(self, image, file_name, new_file_name):
-        full_image_file = nib.load(file_name)
-        full_image_file.set_filename(new_file_name)
-        full_image_file.set_data(image)
 
     @staticmethod
     def process_pair(files):
