@@ -10,7 +10,8 @@ echo "Present working directory is $PWD"
 source $HOME/tensorflow/bin/activate
 
 # ml-bet
-python $HOME/brainlearning/operations.py    --mode generate_3 \
+python $HOME/brainlearning/brainlearning/operations.py \
+                                            --mode generate_3 \
                                             --model_x $HOME/brainlearning/model/f_1i_mal_x/model.hdf5 \
                                             --model_y $HOME/brainlearning/model/f_1i_mal_y/model.hdf5 \
                                             --model_z $HOME/brainlearning/model/f_1i_mal_z/model.hdf5 \
@@ -18,7 +19,8 @@ python $HOME/brainlearning/operations.py    --mode generate_3 \
                                             --result_dir $HOME/brainlearning/model/result_3/ \
                                             --images_dir_path ../project/ml-bet/
 
-python $HOME/brainlearning/operations.py    --mode generate_3 \
+python $HOME/brainlearning/brainlearning/operations.py \
+                                            --mode generate_3 \
                                             --model_x $HOME/brainlearning/model/f_1i_mal_x/model.hdf5 \
                                             --model_y $HOME/brainlearning/model/f_1i_mal_y/model.hdf5 \
                                             --model_z $HOME/brainlearning/model/f_1i_mal_z/model.hdf5 \
@@ -26,7 +28,8 @@ python $HOME/brainlearning/operations.py    --mode generate_3 \
                                             --result_dir $HOME/brainlearning/model/result_3/ \
                                             --images_dir_path ../project/ml-bet/
 
-python $HOME/brainlearning/operations.py    --mode generate_3 \
+python $HOME/brainlearning/brainlearning/operations.py \
+                                            --mode generate_3 \
                                             --model_x $HOME/brainlearning/model/f_1i_mal_x/model.hdf5 \
                                             --model_y $HOME/brainlearning/model/f_1i_mal_y/model.hdf5 \
                                             --model_z $HOME/brainlearning/model/f_1i_mal_z/model.hdf5 \
@@ -34,7 +37,8 @@ python $HOME/brainlearning/operations.py    --mode generate_3 \
                                             --result_dir $HOME/brainlearning/model/result_3/ \
                                             --images_dir_path ../project/ml-bet/
 
-python $HOME/brainlearning/operations.py    --mode generate_3 \
+python $HOME/brainlearning/brainlearning/operations.py \
+                                            --mode generate_3 \
                                             --model_x $HOME/brainlearning/model/f_1i_mal_x/model.hdf5 \
                                             --model_y $HOME/brainlearning/model/f_1i_mal_y/model.hdf5 \
                                             --model_z $HOME/brainlearning/model/f_1i_mal_z/model.hdf5 \
@@ -42,7 +46,8 @@ python $HOME/brainlearning/operations.py    --mode generate_3 \
                                             --result_dir $HOME/brainlearning/model/result_3/ \
                                             --images_dir_path ../project/ml-bet/
 
-python $HOME/brainlearning/operations.py    --mode generate_3 \
+python $HOME/brainlearning/brainlearning/operations.py \
+                                            --mode generate_3 \
                                             --model_x $HOME/brainlearning/model/f_1i_mal_x/model.hdf5 \
                                             --model_y $HOME/brainlearning/model/f_1i_mal_y/model.hdf5 \
                                             --model_z $HOME/brainlearning/model/f_1i_mal_z/model.hdf5 \
