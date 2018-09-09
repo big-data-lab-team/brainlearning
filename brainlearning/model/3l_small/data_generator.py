@@ -8,8 +8,15 @@ import numpy as np
 
 
 class DataGenerator(keras.utils.Sequence):
-    def __init__(self, dir_path, file_pattern='*.nii.gz', distinguish_pattern='_brain', batch_size=10, dim=320,
-                 n_channels=1, shuffle=True):
+    def __init__(self,
+                 dir_path,
+                 file_pattern='*.nii.gz',
+                 distinguish_pattern='_brain',
+                 batch_size=10,
+                 dim=320,
+                 n_channels=1,
+                 shuffle=True):
+
         self.dir_path = dir_path
         self.file_pattern = file_pattern
         self.distinguish_pattern = distinguish_pattern
@@ -20,13 +27,12 @@ class DataGenerator(keras.utils.Sequence):
         self.file_pairs = self.get_file_pairs(self.dir_path, file_pattern, distinguish_pattern)
         self.indexes = np.arange(len(self.file_pairs))
         self.on_epoch_end()
-        self.current_pair = None
 
     def __len__(self):
         return int(np.floor(len(self.file_pairs) / self.batch_size))
 
     def __getitem__(self, index):
-        print('Get Item index ', index)
+        # print('Get Item index ', index)
 
         # Generate indexes of the batch
         indexes = self.indexes[index * self.batch_size:(index + 1) * self.batch_size]
@@ -44,41 +50,27 @@ class DataGenerator(keras.utils.Sequence):
         if self.shuffle:
             np.random.shuffle(self.indexes)
 
-    def __data_generation(self, list_ids_temp):
-        # X : (n_samples, *dim, n_channels)
-        # Initialization
-        # X = np.empty((self.batch_size, *self.dim, self.n_channels))
-        # y = np.empty((self.batch_size), dtype=int)
+    def __data_generation(self, list_of_pairs):
         x = np.empty(shape=(0, self.dim, self.dim, self.n_channels))
         y = np.empty(shape=(0, self.dim, self.dim, 1))
 
-        for i in list_ids_temp:
-            # print('data generation pair ', i)
-
-            x_temp, y_temp = self.process_pair(i)
-
-            # print(x_temp.shape)
-            # print(y_temp.shape)
+        for pair in list_of_pairs:
+            x_file, y_file = self.process_pair(pair)
 
             random_idx = np.random.randint(self.dim * 3, size=self.batch_size)
 
-            x_temp = x_temp[random_idx, : ]
-            y_temp = y_temp[random_idx, : ]
+            for index in random_idx:
+                l, r = self.edges(index, self.dim)
+                margin = (self.n_channels - 1) // 2
 
-            # x_temp = x_temp[0:self.batch_size, ]
-            # y_temp = y_temp[0:self.batch_size, ]
+                chunk = np.empty(shape=(0, self.dim, self.dim))
+                for layer in list(range(index - margin, index + margin + 1)) :
+                    chunk = np.concatenate((chunk, [self.get_layer(x_file, layer, l, r, self.n_channels, self.dim)]), axis=0)
+                chunk = np.moveaxis(chunk, 0, -1)
+                x = np.concatenate((x, [chunk]), axis=0)
+                y_temp = np.reshape(y_file[index], (self.dim, self.dim, 1))
+                y = np.concatenate((y, [y_temp]), axis=0)
 
-            # print(x_temp.shape)
-            # print(y_temp.shape)
-
-            # x_temp = x_temp.reshape((self.dim * 3, self.dim, self.dim, self.n_channels))
-            # y_temp = y_temp.reshape((self.dim * 3, self.dim, self.dim, 1))
-
-            x_temp = x_temp.reshape((self.batch_size, self.dim, self.dim, self.n_channels))
-            y_temp = y_temp.reshape((self.batch_size, self.dim, self.dim, 1))
-
-            x = np.append(x, x_temp, axis=0)
-            y = np.append(y, y_temp, axis=0)
         return x, y
 
     def get_file(self, file_name=None):
@@ -87,20 +79,74 @@ class DataGenerator(keras.utils.Sequence):
         full_image_file = nib.load(file_name)
         full_image = full_image_file.get_data()
         padded_full_image = np.pad(full_image, ((32, 32), (0, 0), (0, 0)), mode='constant')
+
         z_full_stack = np.copy(padded_full_image)
+        z_full_stack_max = np.amax(z_full_stack, axis=(1, 2))
+        z_full_stack_normalized = np.divide(z_full_stack, z_full_stack_max[:, None, None],
+                                            where=z_full_stack_max[:, None, None] != 0)
         y_full_stack = np.rot90(padded_full_image, axes=(0, 1))
+        y_full_stack_max = np.amax(y_full_stack, axis=(1, 2))
+        y_full_stack_normalized = np.divide(y_full_stack, y_full_stack_max[:, None, None],
+                                            where=y_full_stack_max[:, None, None] != 0)
         x_full_stack = np.rot90(padded_full_image, axes=(0, 2))
-        full_image_stack = np.concatenate((z_full_stack, y_full_stack, x_full_stack))
+        x_full_stack_max = np.amax(x_full_stack, axis=(1, 2))
+        x_full_stack_normalized = np.divide(x_full_stack, x_full_stack_max[:, None, None],
+                                            where=z_full_stack_max[:, None, None] != 0)
 
-        full_image_stack_max = np.amax(full_image_stack, axis=(1, 2))
-        full_image_stack_normalized = np.divide(full_image_stack, full_image_stack_max[:, None, None],
-                                                where=full_image_stack_max[:, None, None] != 0)
-        return full_image_stack_normalized, file_name
+        # full_image_stack = np.concatenate((z_full_stack, y_full_stack, x_full_stack))
+        #
+        # full_image_stack_max = np.amax(full_image_stack, axis=(1, 2))
+        # full_image_stack_normalized = np.divide(full_image_stack, full_image_stack_max[:, None, None],
+        #                                         where=full_image_stack_max[:, None, None] != 0)
+        return x_full_stack_normalized, y_full_stack_normalized, z_full_stack_normalized, file_name
 
-    def save_to_file(self, image, file_name, new_file_name):
+    @staticmethod
+    def group_into_layers(array, dim, n_channels):
+        output = np.empty(shape=(0, dim, dim, n_channels))
+        margin = (n_channels - 1) // 2
+        padding = np.zeros(shape=(margin, dim, dim))
+        for layer in range(dim):
+            chunk = np.empty(shape=(0, dim, dim))
+            if layer == 0:
+                chunk = np.concatenate((chunk, padding), axis=0)
+                chunk = np.concatenate((chunk, array[layer: layer + margin + 1]), axis=0)
+            elif layer == dim - 1:
+                chunk = np.concatenate((chunk, array[layer - margin: layer + 1]), axis=0)
+                chunk = np.concatenate((chunk, padding), axis=0)
+            else:
+                chunk = np.concatenate((chunk, array[layer - margin: layer + margin + 1]), axis=0)
+            chunk = np.moveaxis(chunk, 0, -1)
+            output = np.concatenate((output, [chunk]), axis=0)
+        return output
+
+    @staticmethod
+    def get_layer(pile, layer, l, r, channels, dim):
+        if l - (layer - channels) > 0:
+            return np.zeros(shape=(dim, dim))
+        if r - (layer + channels) < 0:
+            return np.zeros(shape=(dim, dim))
+        return pile[layer]
+
+    @staticmethod
+    def edges(layer, dim):
+        l = None
+        r = None
+        if layer < dim:
+            l = 0
+            r = dim
+        elif layer < dim * 2:
+            l = dim
+            r = dim * 2
+        elif layer < dim * 3:
+            l = dim * 2
+            r = dim * 3
+        return l, r
+
+    @staticmethod
+    def save_to_file(image, file_name, new_file_name):
         full_image_file = nib.load(file_name)
-        full_image_file.set_filename(new_file_name)
-        full_image_file.set_data(image)
+        new_image = nib.Nifti1Image(image, full_image_file.affine, full_image_file.header)
+        nib.save(new_image, new_file_name)
 
     @staticmethod
     def process_pair(files):

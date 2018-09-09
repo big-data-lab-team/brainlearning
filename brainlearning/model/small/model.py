@@ -10,14 +10,15 @@ import tensorflow as tf
 
 
 def model_name():
-    return '3l'
+    return 'small'
 
 
 def encoder_model():
     model = Sequential()
     # Layer E1
-    model.add(Layer(input_shape=(320, 320, 3)))
+    model.add(Layer(input_shape=(320, 320, 1)))
     model.add(Conv2D(20, (11, 11), padding='same', strides=(2, 2)))
+    # model.add(LeakyReLU(alpha=0.2))
     model.add(Activation('tanh'))
     model.add(Dropout(rate=0.5))
     model.add(MaxPooling2D(pool_size=(2, 2)))
@@ -115,3 +116,7 @@ def build_model():
     # print(full_model.summary())
 
     return full_model
+
+
+def get_custom_objects():
+    return {}

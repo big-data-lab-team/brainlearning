@@ -1,3 +1,9 @@
+# Project specific
+*.hdf5
+*.json
+*.nii
+*.nii.gz
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
