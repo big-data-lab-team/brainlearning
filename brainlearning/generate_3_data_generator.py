@@ -10,7 +10,6 @@ class DataGenerator:
                  file_pattern='*.nii.gz',
                  distinguish_pattern='_brain',
                  dim=320):
-        self.dir_path = dir_path
         self.file_pattern = file_pattern
         self.distinguish_pattern = distinguish_pattern
         self.dim = dim

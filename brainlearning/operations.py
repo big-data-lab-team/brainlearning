@@ -337,11 +337,11 @@ if __name__ == "__main__":
             shuffle=False)
         generate(model_dir=args.model_dir,
                  model_file=args.model_file,
-                 data_generator_instance=data_generator_inst)
+                 data_generator_instance=data_generator_inst,
+                 verbose=args.verbose)
     elif args.mode == "generate_3":
         data_generator = importlib.import_module('generate_3_data_generator')
         data_generator_inst = data_generator.DataGenerator(
-            dir_path=args.images_dir_path,
             file_pattern='*.nii.gz',
             distinguish_pattern='_brain',
             dim=320)
@@ -350,4 +350,5 @@ if __name__ == "__main__":
                    model_z=args.model_z,
                    result_dir=args.result_dir,
                    file_to_process=args.file_to_process,
-                   data_generator_instance=data_generator_inst)
+                   data_generator_instance=data_generator_inst,
+                   verbose=args.verbose)
