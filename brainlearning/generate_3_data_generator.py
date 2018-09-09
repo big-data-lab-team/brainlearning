@@ -6,7 +6,6 @@ import numpy as np
 
 class DataGenerator:
     def __init__(self,
-                 dir_path,
                  file_pattern='*.nii.gz',
                  distinguish_pattern='_brain',
                  dim=320):
@@ -29,19 +28,19 @@ class DataGenerator:
         z_full_stack_max = np.amax(z_full_stack, axis=(1, 2))
         z_full_stack_normalized = np.divide(z_full_stack, z_full_stack_max[:, None, None],
                                             where=z_full_stack_max[:, None, None] != 0)
-        z_full_stack_normalized = np.reshape(z_full_stack_normalized, newshape=(320, 320, 320, 1))
+        z_full_stack_normalized = np.reshape(z_full_stack_normalized, newshape=(self.dim, self.dim, self.dim, 1))
 
         y_full_stack = np.rot90(padded_full_image, axes=(0, 1))
         y_full_stack_max = np.amax(y_full_stack, axis=(1, 2))
         y_full_stack_normalized = np.divide(y_full_stack, y_full_stack_max[:, None, None],
                                             where=y_full_stack_max[:, None, None] != 0)
-        y_full_stack_normalized = np.reshape(y_full_stack_normalized, newshape=(320, 320, 320, 1))
+        y_full_stack_normalized = np.reshape(y_full_stack_normalized, newshape=(self.dim, self.dim, self.dim, 1))
 
         x_full_stack = np.rot90(padded_full_image, axes=(0, 2))
         x_full_stack_max = np.amax(x_full_stack, axis=(1, 2))
         x_full_stack_normalized = np.divide(x_full_stack, x_full_stack_max[:, None, None],
                                             where=z_full_stack_max[:, None, None] != 0)
-        x_full_stack_normalized = np.reshape(x_full_stack_normalized, newshape=(320, 320, 320, 1))
+        x_full_stack_normalized = np.reshape(x_full_stack_normalized, newshape=(self.dim, self.dim, self.dim, 1))
 
         return x_full_stack_normalized, y_full_stack_normalized, z_full_stack_normalized, file_name, (
             first_padding, second_padding, third_padding)

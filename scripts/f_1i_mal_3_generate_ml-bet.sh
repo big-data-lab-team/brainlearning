@@ -17,8 +17,7 @@ python $HOME/brainlearning/brainlearning/operations.py \
                                             --model_z $HOME/brainlearning/model/f_1i_mal_z/model.hdf5 \
                                             --file_to_process $HOME/project/ml-bet/training-set/103515_3T_T1w_MPR1.nii.gz \
                                             --result_dir $HOME/brainlearning/model/result_3/ \
-                                            --images_dir_path ../project/ml-bet/
-
+   \
 python $HOME/brainlearning/brainlearning/operations.py \
                                             --mode generate_3 \
                                             --model_x $HOME/brainlearning/model/f_1i_mal_x/model.hdf5 \
@@ -26,8 +25,7 @@ python $HOME/brainlearning/brainlearning/operations.py \
                                             --model_z $HOME/brainlearning/model/f_1i_mal_z/model.hdf5 \
                                             --file_to_process $HOME/project/ml-bet/training-set/103818_3T_T1w_MPR1.nii.gz \
                                             --result_dir $HOME/brainlearning/model/result_3/ \
-                                            --images_dir_path ../project/ml-bet/
-
+  \
 python $HOME/brainlearning/brainlearning/operations.py \
                                             --mode generate_3 \
                                             --model_x $HOME/brainlearning/model/f_1i_mal_x/model.hdf5 \
@@ -35,7 +33,6 @@ python $HOME/brainlearning/brainlearning/operations.py \
                                             --model_z $HOME/brainlearning/model/f_1i_mal_z/model.hdf5 \
                                             --file_to_process $HOME/project/ml-bet/training-set/106016_3T_T1w_MPR1.nii.gz \
                                             --result_dir $HOME/brainlearning/model/result_3/ \
-                                            --images_dir_path ../project/ml-bet/
 
 python $HOME/brainlearning/brainlearning/operations.py \
                                             --mode generate_3 \
@@ -44,8 +41,7 @@ python $HOME/brainlearning/brainlearning/operations.py \
                                             --model_z $HOME/brainlearning/model/f_1i_mal_z/model.hdf5 \
                                             --file_to_process $HOME/project/ml-bet/training-set/106319_3T_T1w_MPR1.nii.gz \
                                             --result_dir $HOME/brainlearning/model/result_3/ \
-                                            --images_dir_path ../project/ml-bet/
-
+\
 python $HOME/brainlearning/brainlearning/operations.py \
                                             --mode generate_3 \
                                             --model_x $HOME/brainlearning/model/f_1i_mal_x/model.hdf5 \
@@ -53,4 +49,4 @@ python $HOME/brainlearning/brainlearning/operations.py \
                                             --model_z $HOME/brainlearning/model/f_1i_mal_z/model.hdf5 \
                                             --file_to_process $HOME/project/ml-bet/training-set/106521_3T_T1w_MPR1.nii.gz \
                                             --result_dir $HOME/brainlearning/model/result_3/ \
-                                            --images_dir_path ../project/ml-bet/
+ \

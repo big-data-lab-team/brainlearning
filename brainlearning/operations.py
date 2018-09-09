@@ -99,7 +99,7 @@ def train(model_imported=None,
     print('\n')
     print('==================================================================================================')
     print('Saving final ', model_imported.model_name(), ' Model')
-    save_model(model_to_train, acc, save_path)
+    save_model(model_to_train, acc)
     print('Model Saved Successfully')
 
 
@@ -260,7 +260,6 @@ def get_args():
     parser.add_argument("--steps_per_epoch", type=int, default=1, help="Number of data draws per epochs.")
     parser.add_argument("--validation_steps", type=int, default=1, help="Number of data draws on validation.")
     parser.add_argument("--batch_size", type=int, default=10, help="Batch size.")
-    parser.add_argument("--n_channels", type=int, default=1, help="Number of channels/layers on input.")
     parser.add_argument("--images_dir_path", type=str, default='../ml-bet/',
                         help="Path to Train and Validation file directories.")
 
@@ -288,8 +287,6 @@ if __name__ == "__main__":
             file_pattern='*.nii.gz',
             distinguish_pattern='_brain',
             batch_size=args.batch_size,
-            dim=320,
-            n_channels=args.n_channels,
             shuffle=False)
         model = importlib.import_module('model.' + args.model + '.model')
         train(model,
@@ -310,8 +307,6 @@ if __name__ == "__main__":
             file_pattern='*.nii.gz',
             distinguish_pattern='_brain',
             batch_size=args.batch_size,
-            dim=320,
-            n_channels=args.n_channels,
             shuffle=False)
         model = importlib.import_module('model.' + args.model + '.model')
         train(model,
@@ -332,8 +327,6 @@ if __name__ == "__main__":
             file_pattern='*.nii.gz',
             distinguish_pattern='_brain',
             batch_size=args.batch_size,
-            dim=320,
-            n_channels=args.n_channels,
             shuffle=False)
         generate(model_dir=args.model_dir,
                  model_file=args.model_file,
@@ -343,8 +336,7 @@ if __name__ == "__main__":
         data_generator = importlib.import_module('generate_3_data_generator')
         data_generator_inst = data_generator.DataGenerator(
             file_pattern='*.nii.gz',
-            distinguish_pattern='_brain',
-            dim=320)
+            distinguish_pattern='_brain')
         generate_3(model_x=args.model_x,
                    model_y=args.model_y,
                    model_z=args.model_z,

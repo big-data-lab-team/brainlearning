@@ -23,7 +23,6 @@ usage: operations.py [-h]
                      [--steps_per_epoch STEPS_PER_EPOCH]
                      [--validation_steps VALIDATION_STEPS]
                      [--batch_size BATCH_SIZE] 
-                     [--n_channels N_CHANNELS]
                      [--images_dir_path IMAGES_DIR_PATH]
                      [--model_dir MODEL_DIR] 
                      [--model_file MODEL_FILE]
@@ -41,12 +40,11 @@ usage: operations.py [-h]
 | all                       |--verbose              | Default 1. (0, 1, 2)                      | Verbosity of logging.|
 | train, continue           |--graph_dir            | Default "graph/"                          | Directory to store Tensorflow Graph info.|
 | train, continue           |--epochs               | Default 10                                | Number of Epochs.|
-| train, continue           |--save_each_epochs     | Default 1                                 | Intermediate model Save after # of epochs.|
+| train, continue           |--save_each_epochs     | Default 1                                 | Intermediate model Save after # of epochs if accuracy improved.|
 | train, continue           |--save_each_epochs_dir | Default "epoch/"                          | Directory to store intermediate model.|
 | train, continue           |--steps_per_epoch      | Default 1                                 | Number of data draws per epochs.|
 | train, continue           |--validation_steps     | Default 1                                 | Number of data draws on validation.|
 | train, continue           |--batch_size           | Default 10                                | Batch size.|
-| train, continue, generate |--n_channels           | Default 1                                 | Number of channels/layers on input.|
 | train, continue, generate |--images_dir_path      | Default "../ml-bet/"                      | Path to Train and Validation file directories.|
 | train, continue, generate |--model_dir            | Default "./model/"                        | Directory of the model.|
 | train, continue, generate |--model_file           | Default "model.hdf"                       | The model file name.|
@@ -64,7 +62,6 @@ python operations.py \
     --mode train \
     --model $model \
     --batch_size 4 \
-    --n_channels 1 \
     --steps_per_epoch 1 \
     --epochs 250 \
     --save_each_epochs 20 \
@@ -79,7 +76,6 @@ python operations.py \
     --model $model 
     --model_dir $model/ 
     --batch_size 2 
-    --n_channels 1 
     --steps_per_epoch 1 
     --epochs 200 
     --save_each_epochs 20 
