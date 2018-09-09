@@ -243,30 +243,38 @@ def generate_3(
 
 
 def get_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--mode", type=str)
-    parser.add_argument("--verbose", type=int, default=1)
+    parser = argparse.ArgumentParser(description="Tensorflow models operations")
+    parser.add_argument("--mode", type=str, required=True,
+                        help="Mode of the program.",
+                        choices=["train", "continue", "generate", "generate_3"])
 
-    parser.add_argument("--graph_dir", type=str, default='./graph/')
+    parser.add_argument("--model", type=str, required=True, help="Model Name.")
 
-    parser.add_argument("--model", type=str)
-    parser.add_argument("--epochs", type=int, default=10)
-    parser.add_argument("--save_each_epochs", type=int, default=1)
-    parser.add_argument("--save_each_epochs_dir", type=str, default=None)
-    parser.add_argument("--steps_per_epoch", type=int, default=1)
-    parser.add_argument("--validation_steps", type=int, default=1)
-    parser.add_argument("--batch_size", type=int, default=10)
-    parser.add_argument("--n_channels", type=int, default=1)
-    parser.add_argument("--images_dir_path", type=str, default='../ml-bet/')
+    parser.add_argument("--verbose", type=int, default=1, help="Verbosity of logging.")
+    parser.add_argument("--graph_dir", type=str, default='./graph/', help="Directory to store Tensorflow Graph info.")
 
-    parser.add_argument("--model_dir", type=str, default='./model/')
-    parser.add_argument("--model_file", type=str, default='model.hdf5')
-    parser.add_argument("--result_dir", type=str, default='./result/')
+    # Training parameters
+    parser.add_argument("--epochs", type=int, default=10, help="Number of Epochs.")
+    parser.add_argument("--save_each_epochs", type=int, default=1, help="Intermediate model Save after # of epochs.")
+    parser.add_argument("--save_each_epochs_dir", type=str, default=None, help="Directory to store intermediate model.")
+    parser.add_argument("--steps_per_epoch", type=int, default=1, help="Number of data draws per epochs.")
+    parser.add_argument("--validation_steps", type=int, default=1, help="Number of data draws on validation.")
+    parser.add_argument("--batch_size", type=int, default=10, help="Batch size.")
+    parser.add_argument("--n_channels", type=int, default=1, help="Number of channels/layers on input.")
+    parser.add_argument("--images_dir_path", type=str, default='../ml-bet/',
+                        help="Path to Train and Validation file directories.")
 
-    parser.add_argument("--model_x", type=str)
-    parser.add_argument("--model_y", type=str)
-    parser.add_argument("--model_z", type=str)
-    parser.add_argument("--file_to_process", type=str, default=None)
+    parser.add_argument("--model_dir", type=str, default='./model/', help="Directory of the model.")
+    parser.add_argument("--model_file", type=str, default='model.hdf5', help="The model file name.")
+
+    # Generation specific parameters
+    parser.add_argument("--result_dir", type=str, default='./result/', help="Directory to store result.")
+
+    # Generation 3 specific parameters
+    parser.add_argument("--model_x", type=str, help="Model X file *.hdf5")
+    parser.add_argument("--model_y", type=str, help="Model Y file *.hdf5")
+    parser.add_argument("--model_z", type=str, help="Model Z file *.hdf5")
+    parser.add_argument("--file_to_process", type=str, required=True, help="File nii or nii.gz to generate mask.")
     return parser.parse_args()
 
 
@@ -331,47 +339,15 @@ if __name__ == "__main__":
                  model_file=args.model_file,
                  data_generator_instance=data_generator_inst)
     elif args.mode == "generate_3":
-        data_generator = importlib.import_module('data_generator')
+        data_generator = importlib.import_module('generate_3_data_generator')
         data_generator_inst = data_generator.DataGenerator(
             dir_path=args.images_dir_path,
             file_pattern='*.nii.gz',
             distinguish_pattern='_brain',
-            batch_size=args.batch_size,
-            dim=320,
-            n_channels=args.n_channels,
-            shuffle=False)
+            dim=320)
         generate_3(model_x=args.model_x,
                    model_y=args.model_y,
                    model_z=args.model_z,
                    result_dir=args.result_dir,
                    file_to_process=args.file_to_process,
                    data_generator_instance=data_generator_inst)
-    elif args.mode == "pre_process":
-        data_generator = importlib.import_module('model.' + args.model + '.data_generator')
-        data_generator_inst = data_generator.DataGenerator(
-            dir_path=args.images_dir_path,
-            file_pattern='*.nii.gz',
-            distinguish_pattern='_brain',
-            batch_size=args.batch_size,
-            dim=320,
-            n_channels=args.n_channels,
-            shuffle=False)
-        x, y, z, file_name = data_generator_inst.get_file()
-        x_processed = data_generator_inst.group_into_layers(x, 320, 3)
-        # x, y = data_generator_inst.__getitem__(1)
-        # print(x.shape)
-        # print(y.shape)
-
-    # file_pairs = pre_process.get_file_pairs('../ml-bet/')
-    # processed = pre_process.process_pair(file_pairs[0])
-
-    # build_small_model()
-    # build_model()
-    # experiments()
-    # train_small()
-    # pre_process()
-
-    # if args.mode == "train":
-    #     train(BATCH_SIZE=args.batch_size)
-    # elif args.mode == "generate":
-    # generate(BATCH_SIZE=args.batch_size, nice=args.nice)
