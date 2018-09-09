@@ -5,24 +5,13 @@ import os
 import time
 
 import numpy as np
-from keras.callbacks import TensorBoard, ModelCheckpoint
-from keras.models import load_model
 from keras import backend as K
+from keras.callbacks import TensorBoard, ModelCheckpoint
 from keras.losses import binary_crossentropy
+from keras.models import load_model
 
 timestamp_format = '%Y-%m-%d-%H:%M:%S.%f'
 round_accuracy = 4
-
-
-def sorensen_dice_distance(img_1, img_2):
-    numerator = np.sum(np.multiply(img_1, img_2))
-    denominator = np.sum(img_1) + np.sum(img_2)
-    return (2 * numerator) / denominator
-
-
-def dice_loss(y_true, y_pred):
-    result = 1 - sorensen_dice_distance(y_true, y_pred)
-    return result
 
 
 def dice_coef(y_true, y_pred, smooth=1):
@@ -52,12 +41,14 @@ def train(model_imported=None,
           verbose=1,
           save_each_epochs=1,
           save_each_epochs_dir=None):
+
     K.clear_session()
+
     if continue_training:
         print("Continue Train")
         model_to_train = load_model('./model/' + model_dir + model_file,
-                                    custom_objects={'bce_dice_loss': bce_dice_loss,
-                                                    'dice_coef': dice_coef,
+                                    custom_objects={'dice_coef': dice_coef,
+                                                    'bce_dice_loss': bce_dice_loss,
                                                     'dice_coef_loss': dice_coef_loss})
         save_path = './model/' + model_dir
         graph_path = './graph/' + model_dir
@@ -112,7 +103,7 @@ def train(model_imported=None,
     print('Model Saved Successfully')
 
 
-def save_model(model_to_save, accuracy, model_dir):
+def save_model(model_to_save, model_dir):
     # Save Model
     if not os.path.exists(model_dir):
         os.makedirs(model_dir)
@@ -151,9 +142,6 @@ def generate(
     print(model_to_predict.summary())
 
     x, y, z, file_name = data_generator_instance.get_file()
-    # x = data_generator_inst.group_into_layers(x, 320, 3)
-    # y = data_generator_inst.group_into_layers(y, 320, 3)
-    # z = data_generator_inst.group_into_layers(z, 320, 3)
 
     print('Predict:')
     pred_x = model_to_predict.predict(x, verbose=verbose)
@@ -176,31 +164,6 @@ def generate(
     if not os.path.exists(result_dir):
         os.makedirs(result_dir)
 
-    # acc = 0.5
-    # data_generator_instance.save_to_file((pred_x > acc).astype(int), file_name, result_dir + file_name.split('/')[-1] + '-' + timestamp + '-result-x-' + str(acc) + '.nii.gz')
-    # data_generator_instance.save_to_file((pred_y > acc).astype(int), file_name, result_dir + file_name.split('/')[-1] + '-' + timestamp + '-result-y-' + str(acc) + '.nii.gz')
-    # data_generator_instance.save_to_file((pred_z > acc).astype(int), file_name, result_dir + file_name.split('/')[-1] + '-' + timestamp + '-result-z-' + str(acc) + '.nii.gz')
-    #
-    # acc = 0.6
-    # data_generator_instance.save_to_file((pred_x > acc).astype(int), file_name, result_dir + file_name.split('/')[-1] + '-' + timestamp + '-result-x-' + str(acc) + '.nii.gz')
-    # data_generator_instance.save_to_file((pred_y > acc).astype(int), file_name, result_dir + file_name.split('/')[-1] + '-' + timestamp + '-result-y-' + str(acc) + '.nii.gz')
-    # data_generator_instance.save_to_file((pred_z > acc).astype(int), file_name, result_dir + file_name.split('/')[-1] + '-' + timestamp + '-result-z-' + str(acc) + '.nii.gz')
-    #
-    # acc = 0.7
-    # data_generator_instance.save_to_file((pred_x > acc).astype(int), file_name, result_dir + file_name.split('/')[-1] + '-' + timestamp + '-result-x-' + str(acc) + '.nii.gz')
-    # data_generator_instance.save_to_file((pred_y > acc).astype(int), file_name, result_dir + file_name.split('/')[-1] + '-' + timestamp + '-result-y-' + str(acc) + '.nii.gz')
-    # data_generator_instance.save_to_file((pred_z > acc).astype(int), file_name, result_dir + file_name.split('/')[-1] + '-' + timestamp + '-result-z-' + str(acc) + '.nii.gz')
-    #
-    # acc = 0.8
-    # data_generator_instance.save_to_file((pred_x > acc).astype(int), file_name, result_dir + file_name.split('/')[-1] + '-' + timestamp + '-result-x-' + str(acc) + '.nii.gz')
-    # data_generator_instance.save_to_file((pred_y > acc).astype(int), file_name, result_dir + file_name.split('/')[-1] + '-' + timestamp + '-result-y-' + str(acc) + '.nii.gz')
-    # data_generator_instance.save_to_file((pred_z > acc).astype(int), file_name, result_dir + file_name.split('/')[-1] + '-' + timestamp + '-result-z-' + str(acc) + '.nii.gz')
-    #
-    # acc = 0.9
-    # data_generator_instance.save_to_file((pred_x > acc).astype(int), file_name, result_dir + file_name.split('/')[-1] + '-' + timestamp + '-result-x-' + str(acc) + '.nii.gz')
-    # data_generator_instance.save_to_file((pred_y > acc).astype(int), file_name, result_dir + file_name.split('/')[-1] + '-' + timestamp + '-result-y-' + str(acc) + '.nii.gz')
-    # data_generator_instance.save_to_file((pred_z > acc).astype(int), file_name, result_dir + file_name.split('/')[-1] + '-' + timestamp + '-result-z-' + str(acc) + '.nii.gz')
-
     # Save as is
     data_generator_instance.save_to_file(pred_x, file_name,
                                          result_dir + file_name.split('/')[-1] + '-' + timestamp + '-result-x.nii.gz')
@@ -208,12 +171,6 @@ def generate(
                                          result_dir + file_name.split('/')[-1] + '-' + timestamp + '-result-y.nii.gz')
     data_generator_instance.save_to_file(pred_z, file_name,
                                          result_dir + file_name.split('/')[-1] + '-' + timestamp + '-result-z.nii.gz')
-
-    # # Save 1 - as is
-    # data_generator_instance.save_to_file(1 - pred_x, file_name, result_dir + file_name.split('/')[-1] + '-' + timestamp + '-result-1-x.nii.gz')
-    # data_generator_instance.save_to_file(1 - pred_y, file_name, result_dir + file_name.split('/')[-1] + '-' + timestamp + '-result-1-y.nii.gz')
-    # data_generator_instance.save_to_file(1 - pred_z, file_name, result_dir + file_name.split('/')[-1] + '-' + timestamp + '-result-1-z.nii.gz')
-
     # Save average
     data_generator_instance.save_to_file(((pred_x + pred_y + pred_z) / 3), file_name,
                                          result_dir + file_name.split('/')[-1] + '-' + timestamp + '-result-xyz.nii.gz')
@@ -231,19 +188,19 @@ def generate_3(
     print('==================================================================================================')
     print("Predict")
     model_to_predict_x = load_model(str(model_x),
-                                    custom_objects={'bce_dice_loss': bce_dice_loss,
-                                                    'dice_coef': dice_coef,
+                                    custom_objects={'dice_coef': dice_coef,
+                                                    'bce_dice_loss': bce_dice_loss,
                                                     'dice_coef_loss': dice_coef_loss})
     model_to_predict_y = load_model(str(model_y),
-                                    custom_objects={'bce_dice_loss': bce_dice_loss,
-                                                    'dice_coef': dice_coef,
+                                    custom_objects={'dice_coef': dice_coef,
+                                                    'bce_dice_loss': bce_dice_loss,
                                                     'dice_coef_loss': dice_coef_loss})
     model_to_predict_z = load_model(str(model_z),
-                                    custom_objects={'bce_dice_loss': bce_dice_loss,
-                                                    'dice_coef': dice_coef,
+                                    custom_objects={'dice_coef': dice_coef,
+                                                    'bce_dice_loss': bce_dice_loss,
                                                     'dice_coef_loss': dice_coef_loss})
 
-    x, y, z, file_name, padding = data_generator_instance.get_file(file_to_process)
+    x, y, z, mri_file_name, padding = data_generator_instance.get_file(file_to_process)
 
     print('Predict:')
     pred_x = model_to_predict_x.predict(x, verbose=verbose)
@@ -264,21 +221,25 @@ def generate_3(
 
     # Save as is
     data_generator_instance.save_to_file(pred_x,
-                                         file_name,
-                                         result_dir + file_name.split('/')[-1] + '-' + timestamp + '-result-x.nii.gz')
+                                         mri_file_name,
+                                         result_dir + mri_file_name.split('/')[
+                                             -1] + '-' + timestamp + '-result-x.nii.gz')
 
     data_generator_instance.save_to_file(pred_y,
-                                         file_name,
-                                         result_dir + file_name.split('/')[-1] + '-' + timestamp + '-result-y.nii.gz')
+                                         mri_file_name,
+                                         result_dir + mri_file_name.split('/')[
+                                             -1] + '-' + timestamp + '-result-y.nii.gz')
 
     data_generator_instance.save_to_file(pred_z,
-                                         file_name,
-                                         result_dir + file_name.split('/')[-1] + '-' + timestamp + '-result-z.nii.gz')
+                                         mri_file_name,
+                                         result_dir + mri_file_name.split('/')[
+                                             -1] + '-' + timestamp + '-result-z.nii.gz')
 
     # Save average
     data_generator_instance.save_to_file(((pred_x + pred_y + pred_z) / 3),
-                                         file_name,
-                                         result_dir + file_name.split('/')[-1] + '-' + timestamp + '-result-xyz.nii.gz')
+                                         mri_file_name,
+                                         result_dir + mri_file_name.split('/')[
+                                             -1] + '-' + timestamp + '-result-xyz.nii.gz')
 
 
 def get_args():
