@@ -3,7 +3,7 @@ from setuptools import setup
 import sys
 
 VERSION = "0.0.1"
-DEPS = ["keras", "nibabel"]
+DEPS = ["Keras", "nibabel", "numpy", ]
 
 setup(name="brainlearning",
       version=VERSION,

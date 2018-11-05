@@ -1,3 +1,10 @@
+# Project specific
+*.hdf5
+*.json
+*.nii
+*.nii.gz
+*.DS_Store
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -93,6 +100,9 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# Intellij Idea project settings
+.idea
 
 # mkdocs documentation
 /site
